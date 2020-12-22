@@ -73,6 +73,6 @@ int main(int argc, char *argv[])
 
   calculate_time(&start, &end, &time_used);
 
-  printf("Time taken: %f s\n", (time_used / 1.0e9));
+  printf("Time taken: %f seconds OR %lld Nano Seconds\n", (time_used / 1.0e9), (time_used));
   return 0;
 }

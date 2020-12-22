@@ -17,27 +17,31 @@ void substr(char *dest, char *src, int start, int length)
 
 void crack(char *salt_and_encrypted)
 {
-  int x, y, z;   // Loop counters
-  char salt[7];  // String used in hashing the password. Need space for \0 // incase you have modified the salt value, then should modifiy the number accordingly
-  char plain[7]; // The combination of letters currently being checked // Please modifiy the number when you enlarge the encrypted password.
-  char *enc;     // Pointer to the encrypted password
+  int w, x, y, z; // Loop counters
+  char salt[7];   // String used in hashing the password. Need space for \0 // incase you have modified the salt value, then should modifiy the number accordingly
+  char plain[7];  // The combination of letters currently being checked // Please modifiy the number when you enlarge the encrypted password.
+  char *enc;      // Pointer to the encrypted password
 
   substr(salt, salt_and_encrypted, 0, 6);
 
-  for (x = 'A'; x <= 'Z'; x++)
+  for (w = 'A'; w <= 'Z'; w++)
   {
-    for (y = 'A'; y <= 'Z'; y++)
+    for (x = 'A'; x <= 'Z'; x++)
     {
-      for (z = 0; z <= 99; z++)
+      for (y = 'A'; y <= 'Z'; y++)
       {
-        sprintf(plain, "%c%c%02d", x, y, z);
-        enc = (char *)crypt(plain, salt);
-        count++;
-        if (strcmp(salt_and_encrypted, enc) == 0)
+
+        for (z = 0; z <= 99; z++)
         {
-          printf("#%-8d%s %s\n", count, plain, enc);
-          // exits when solution is found
-          return;
+          sprintf(plain, "%c%c%c%02d", w, x, y, z);
+          enc = (char *)crypt(plain, salt);
+          count++;
+          if (strcmp(salt_and_encrypted, enc) == 0)
+          {
+            printf("#%-8d%s %s\n", count, plain, enc);
+            // exits when solution is found
+            return;
+          }
         }
       }
     }
@@ -64,11 +68,9 @@ int main(int argc, char *argv[])
   long long int time_used;
 
   clock_gettime(CLOCK_MONOTONIC_RAW, &start);
-
-  crack("$6$AS$1nd8twt1KXW5uy.D.tkQ2xg.77h7IsAZdVMfZ8AHeELNWhtDojYhhCGZoViDefGvBRUgzuoBWr/EuVSa3Mnn6/"); //Copy and Paste your ecrypted password here using EncryptShA512 program
+  crack("$6$AS$kuNHLMKHveeV1b.8aR2SlgNCT8OIMEAGw1ENQA75yODNnC/mG5uQiHbWKJ.QtOQQ/nB42kVYTtBl.SyxUbeu/0"); //Copy and Paste your ecrypted password here using EncryptShA512 program
 
   clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-
   printf("%d solutions explored\n", count);
 
   calculate_time(&start, &end, &time_used);

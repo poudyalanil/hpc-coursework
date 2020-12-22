@@ -83,17 +83,33 @@ void crack2(char *salt_and_encrypted)
         }
     }
 }
+
+int calculate_time(struct timespec *start, struct timespec *end,
+                   long long int *diff)
+{
+    long long int in_sec = end->tv_sec - start->tv_sec;
+    long long int in_nano = end->tv_nsec - start->tv_nsec;
+    if (in_nano < 0)
+    {
+        in_sec--;
+        in_nano += 1000000000;
+    }
+    *diff = in_sec * 1000000000 + in_nano;
+    return !(*diff > 0);
+}
+
 int main(int argc, char *argv[])
 {
-    clock_t start, end;
-    double cpu_time_used;
+    struct timespec start, end;
+    long long int time_used;
 
-    start = clock();
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     crack("$6$AS$P.Wy8B/NjpVgwGDKZ1uafxVzLNC7UpfX4yBca4BB03TvxHd0hRhjo0.qr1SpHDU2tzOTwTaVB5/8wm8f6Wgcf."); //Copy and Paste your ecrypted password here using EncryptShA512 program
-    end = clock();
-    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC / 10;
+    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
     printf("%d solutions explored\n", count);
 
-    printf("Time Taken:%f\n", cpu_time_used);
+    calculate_time(&start, &end, &time_used);
+
+    printf("Time taken: %f s\n", (time_used / 1.0e9));
     return 0;
 }

@@ -8,8 +8,8 @@
 #define size 1024
 
 int thread_count;
-clock_t start, end;
-double time_used;
+struct timespec start, end;
+long long int time_used;
 
 struct param
 {
@@ -45,6 +45,20 @@ void create_matrix(int matrix[size][size])
             matrix[i][j] = rand() % 10;
 }
 
+int calculate_time(struct timespec *start, struct timespec *end,
+                   long long int *diff)
+{
+    long long int in_sec = end->tv_sec - start->tv_sec;
+    long long int in_nano = end->tv_nsec - start->tv_nsec;
+    if (in_nano < 0)
+    {
+        in_sec--;
+        in_nano += 1000000000;
+    }
+    *diff = in_sec * 1000000000 + in_nano;
+    return !(*diff > 0);
+}
+
 int main()
 {
 
@@ -60,7 +74,7 @@ int main()
     create_matrix(matrix2);
 
     //starting initial clock
-    start = clock();
+    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     for (i = 0; i < thread_count; i++)
     {
         int code;
@@ -75,8 +89,9 @@ int main()
     for (i = 0; i < thread_count; i++)
         pthread_join(t[i], NULL);
 
-    end = clock();
+    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
 
-    time_used = ((double)(end - start)) / CLOCKS_PER_SEC / 10;
-    printf("Time taken: %f\n", time_used);
+    calculate_time(&start, &end, &time_used);
+
+    printf("Time taken: %f s\n", (time_used / 1.0e9));
 }

@@ -8,6 +8,10 @@
 // Time header
 #include <time.h>
 
+pthread_t thread_1, thread_2;
+
+struct crypt_data *crypt_data1, *crypt_data2;
+
 int count = 0; // A counter used to track the number of combinations explored so far
 
 void substr(char *dest, char *src, int start, int length)
@@ -16,11 +20,11 @@ void substr(char *dest, char *src, int start, int length)
     *(dest + length) = '\0';
 }
 
-void *crack1(void *salt_and_encrypted)
+void *crack1(char *salt_and_encrypted)
 {
     int x, y, z;   // Loop counters
-    char salt[7];  // String used in hashing the password. Need space for \0 // incase you have modified the salt value, then should modifiy the number accordingly
-    char plain[7]; // The combination of letters currently being checked // Please modifiy the number when you enlarge the encrypted password.
+    char salt[7];  // String used in hashing the password. Need space for \0
+    char plain[7]; // The combination of letters currently being checked
     char *enc;     // Pointer to the encrypted password
 
     substr(salt, salt_and_encrypted, 0, 6);
@@ -32,25 +36,36 @@ void *crack1(void *salt_and_encrypted)
             for (z = 0; z <= 99; z++)
             {
                 sprintf(plain, "%c%c%02d", x, y, z);
-                enc = (char *)crypt(plain, salt);
+                enc = (char *)crypt_r(plain, salt, crypt_data1);
+                // printf("#%s\n", salt_and_encrypted);
+
                 count++;
                 if (strcmp(salt_and_encrypted, enc) == 0)
                 {
+                    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
                     printf("#%-8d%s %s\n", count, plain, enc);
-                    // exits when solution is found
-                    // return;
+
+                    pthread_cancel(thread_1);
+                    pthread_cancel(thread_2);
+                    pthread_exit(NULL);
+                    return 0; //uncomment this line if you want to speed-up the running time, program will find you the cracked password only without exploring all possibilites
+                }
+                else
+                {
+                    sleep(0);
                 }
             }
         }
     }
 }
 
-void *crack2(void *salt_and_encrypted)
+void *crack2(char *salt_and_encrypted)
 {
     int x, y, z;   // Loop counters
-    char salt[7];  // String used in hashing the password. Need space for \0 // incase you have modified the salt value, then should modifiy the number accordingly
-    char plain[7]; // The combination of letters currently being checked // Please modifiy the number when you enlarge the encrypted password.
+    char salt[7];  // String used in hashing the password. Need space for \0
+    char plain[7]; // The combination of letters currently being checked
     char *enc;     // Pointer to the encrypted password
+
     substr(salt, salt_and_encrypted, 0, 6);
 
     for (x = 'N'; x <= 'Z'; x++)
@@ -60,17 +75,26 @@ void *crack2(void *salt_and_encrypted)
             for (z = 0; z <= 99; z++)
             {
                 sprintf(plain, "%c%c%02d", x, y, z);
-                enc = (char *)crypt(plain, salt);
+                enc = (char *)crypt_r(plain, salt, crypt_data2);
                 count++;
+                // printf("#%s\n", salt_and_encrypted);
                 if (strcmp(salt_and_encrypted, enc) == 0)
                 {
+
                     printf("#%-8d%s %s\n", count, plain, enc);
-                    // exits when solution is found
-                    // return;
+                    pthread_cancel(thread_1);
+                    pthread_cancel(thread_2);
+                    pthread_exit(NULL);
+                    return 0; //uncomment this line if you want to speed-up the running time, program will find you the cracked password only without exploring all possibilites
+                }
+                else
+                {
+                    sleep(0);
                 }
             }
         }
     }
+    // pthread_exit(NULL);
 }
 int calculate_time(struct timespec *start, struct timespec *end,
                    long long int *diff)
@@ -89,25 +113,21 @@ int calculate_time(struct timespec *start, struct timespec *end,
 int main(int argc, char *argv[])
 {
     int i;
-    pthread_t thread_1, thread_2;
-    int t1, t2;
+
+    crypt_data1 = (struct crypt_data *)malloc(sizeof(struct crypt_data));
+    crypt_data1->initialized = 0;
+
+    crypt_data2 = (struct crypt_data *)malloc(sizeof(struct crypt_data));
+    crypt_data2->initialized = 0;
 
     struct timespec start, end;
     long long int time_used;
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 
-    t1 = pthread_create(&thread_1, NULL, crack1, "6$AS$P.Wy8B/NjpVgwGDKZ1uafxVzLNC7UpfX4yBca4BB03TvxHd0hRhjo0.qr1SpHDU2tzOTwTaVB5/8wm8f6Wgcf.");
-    if (t1)
-    {
-        printf("Thread Creation failed:%d\n", t1);
-    }
+    pthread_create(&thread_1, NULL, (void *)crack1, "$6$AS$1nd8twt1KXW5uy.D.tkQ2xg.77h7IsAZdVMfZ8AHeELNWhtDojYhhCGZoViDefGvBRUgzuoBWr/EuVSa3Mnn6/");
 
-    t2 = pthread_create(&thread_2, NULL, crack2, "6$AS$P.Wy8B/NjpVgwGDKZ1uafxVzLNC7UpfX4yBca4BB03TvxHd0hRhjo0.qr1SpHDU2tzOTwTaVB5/8wm8f6Wgcf.");
-    if (t2)
-    {
-        printf("Thread Creation failed:%d\n", t2);
-    }
+    pthread_create(&thread_2, NULL, (void *)crack2, "$6$AS$1nd8twt1KXW5uy.D.tkQ2xg.77h7IsAZdVMfZ8AHeELNWhtDojYhhCGZoViDefGvBRUgzuoBWr/EuVSa3Mnn6/");
 
     pthread_join(thread_1, NULL);
     pthread_join(thread_2, NULL);

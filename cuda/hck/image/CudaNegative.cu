@@ -8,7 +8,7 @@
 
 //nvcc CudaNegative.cu lodepng.cpp
 
-__global__ void square(unsigned char * gpu_imageOuput, unsigned char * gpu_imageInput){
+__global__ void square(unsigned char * gpu_imageOutput, unsigned char * gpu_imageInput){
 
 	int r;
 	int g;

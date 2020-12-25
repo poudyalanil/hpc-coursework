@@ -7,7 +7,7 @@
 // Time header
 #include <time.h>
 
-// 3 initials 2 letters password cracking : GENERIC METHOD
+// 3 initials letters 2 digits password cracking : GENERIC METHOD
 
 int count = 0;
 

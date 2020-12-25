@@ -104,14 +104,14 @@ int main(int argc, char ** argv){
 	cudaMalloc( (void**) &gpuDigits, sizeof(char) * 26); 
 	cudaMemcpy(gpuDigits, cpuDigits, sizeof(char) * 26, cudaMemcpyHostToDevice);
     
-    clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+  clock_gettime(CLOCK_MONOTONIC_RAW, &start);
 	crack<<< dim3(26,26,1), dim3(10,10,1) >>>( gpuLetters, gpuDigits );
-    cudaThreadSynchronize();
+  cudaThreadSynchronize();
 
-    clock_gettime(CLOCK_MONOTONIC_RAW, &end);
-    calculate_time(&start, &end, &time_used);
+  clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+  calculate_time(&start, &end, &time_used);
 
-    printf("Time taken: %f seconds OR %lld Nano Seconds\n", (time_used / 1.0e9), (time_used));
+  printf("Time taken: %f seconds OR %lld Nano Seconds\n", (time_used / 1.0e9), (time_used));
   
     
 	return 0;
